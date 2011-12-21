@@ -110,3 +110,4 @@
 333	Calle	lundin
 334	Klara :D	elt11kbe
 335	Tempo! / Max	
+230	ETF gillar ARM!	
