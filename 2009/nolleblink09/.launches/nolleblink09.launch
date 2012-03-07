@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launchConfiguration type="com.ti.ccstudio.debug.core.CCELaunchType">
+<stringAttribute key="org.eclipse.debug.core.source_locator_memento" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#13;&#10;&lt;sourceLookupDirector&gt;&#13;&#10;&lt;sourceContainers duplicates=&quot;false&quot;&gt;&#13;&#10;&lt;container memento=&quot;&amp;lt;?xml version=&amp;quot;1.0&amp;quot; encoding=&amp;quot;UTF-8&amp;quot;?&amp;gt;&amp;#13;&amp;#10;&amp;lt;default/&amp;gt;&amp;#13;&amp;#10;&quot; typeId=&quot;org.eclipse.debug.core.containerType.default&quot;/&gt;&#13;&#10;&lt;/sourceContainers&gt;&#13;&#10;&lt;/sourceLookupDirector&gt;&#13;&#10;"/>
+<stringAttribute key="CCEDebugOptions.DEVICE_CONFIGURATION_FILE" value="DebugServer/drivers/TargetDB/devices/MSP430F2274.xml"/>
+<booleanAttribute key="org.eclipse.debug.ui.ATTR_LAUNCH_IN_BACKGROUND" value="false"/>
+<stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_ID" value="com.ti.ccstudio.debug.core.CCEDebugger"/>
+<stringAttribute key="CCEDebugOptions.CPU_RESOLVE_OPTION" value="exact"/>
+<stringAttribute key="org.eclipse.debug.ui.DISPLAY_NAME" value="nolleblink09 [Debug] - TI MSP430 USB1/MSP430"/>
+<stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_REGISTER_GROUPS" value=""/>
+<mapAttribute key="com.ti.ccstudio.debug.core.VARIABLE_STATE">
+<mapEntry key="(::readdata)[8]" value="decimal"/>
+<mapEntry key="::text" value="decimal"/>
+<mapEntry key="::virus" value="decimal"/>
+<mapEntry key="::length" value="decimal"/>
+<mapEntry key="(unsigned char)(::readdata)[9]" value="decimal"/>
+<mapEntry key="::siffra" value="decimal"/>
+</mapAttribute>
+<stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="run"/>
+<stringAttribute key="com.ti.ccstudio.debug.core.DISPLAY_NAME_FORMAT" value="nolleblink09 [Debug] - {0}"/>
+<stringAttribute key="CCEDebugOptions.TARGET_CONFIGURATION_OPTION" value="component"/>
+<stringAttribute key="org.eclipse.cdt.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#13;&#10;&lt;memoryBlockExpressionList&gt;&#13;&#10;&lt;expression text=&quot;4160&quot;/&gt;&#13;&#10;&lt;/memoryBlockExpressionList&gt;&#13;&#10;"/>
+<stringAttribute key="CCEDebugOptions.CONNECTION_CONFIGURATION_FILE" value="DebugServer/drivers/TargetDB/connections/TIMSP430-USB.xml"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="nolleblink09"/>
+<stringAttribute key="CCEDebugOptions.CPU_NAME" value="TI MSP430 USB1/MSP430"/>
+<stringAttribute key="com.ti.ccstudio.debug.core.MRU_MODULES" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#13;&#10;&lt;modules&gt;&#13;&#10;&lt;module name=&quot;Z:\Projekt\texasprogs\Release\nokiadisp.out&quot; time=&quot;Thu Aug 13 08:31:00 BST 2009&quot; time_long=&quot;1250148660874&quot;/&gt;&#13;&#10;&lt;module name=&quot;Z:\Projekt\texas\nolleblink09\Release\nolleblink09.out&quot; time=&quot;Mon Aug 24 13:53:57 BST 2009&quot; time_long=&quot;1251118437085&quot;/&gt;&#13;&#10;&lt;module name=&quot;Z:\Projekt\texas\nolleblink09\Debug\nolleblink09.out&quot; time=&quot;Sat Sep 12 21:40:11 BST 2009&quot; time_long=&quot;1252788011074&quot;/&gt;&#13;&#10;&lt;/modules&gt;&#13;&#10;"/>
+<stringAttribute key="org.eclipse.cdt.launch.GLOBAL_VARIABLES" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#13;&#10;&lt;globalVariableList&gt;&#13;&#10;&lt;globalVariable name=&quot;length&quot; path=&quot;&quot;/&gt;&#13;&#10;&lt;globalVariable name=&quot;readdata&quot; path=&quot;&quot;/&gt;&#13;&#10;&lt;globalVariable name=&quot;siffra&quot; path=&quot;leddisplay.c&quot;/&gt;&#13;&#10;&lt;globalVariable name=&quot;text&quot; path=&quot;&quot;/&gt;&#13;&#10;&lt;globalVariable name=&quot;virus&quot; path=&quot;&quot;/&gt;&#13;&#10;&lt;/globalVariableList&gt;&#13;&#10;"/>
+<booleanAttribute key="CCEDebugOptions.FORBID_DEVICE_MODIFICATION" value="true"/>
+<stringAttribute key="CCEDebugOptions.CPU_ISA" value="MSP430"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug/nolleblink09.out"/>
+<stringAttribute key="com.ti.ccstudio.debug.core.BUILD_CONFIGURATION" value="Debug"/>
+<stringAttribute key="org.eclipse.debug.core.source_locator_id" value="com.ti.ccstudio.debug.core.sourceLocator"/>
+</launchConfiguration>

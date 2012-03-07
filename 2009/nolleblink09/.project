@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>nolleblink09</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.cdt.core.cnature</nature>
+		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>radio.h</name>
+			<type>1</type>
+			<location>Z:/Projekt/Libs/texas/radiocc2500/radio.h</location>
+		</link>
+		<link>
+			<name>radio.c</name>
+			<type>1</type>
+			<location>Z:/Projekt/Libs/texas/radiocc2500/radio.c</location>
+		</link>
+	</linkedResources>
+</projectDescription>
