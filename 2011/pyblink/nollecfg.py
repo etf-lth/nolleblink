@@ -44,8 +44,7 @@ class NolleConfig(QtGui.QMainWindow):
     def initBlinkmojt(self):
         print "init"
         uid = int(self.ui.idEdit.text())
-        text = str(self.ui.textEdit.text())
-        #text = string.replace(text, "å", "\xe5")
+        text = unicode(self.ui.textEdit.text(), 'latin_1')
         stil = str(self.ui.stilEdit.text())
         #dst = int(self.ui.dstEdit.text())
         self.db.write("%d\t%s\t%s\n" % (uid, text, stil))
@@ -64,14 +63,14 @@ class NolleConfig(QtGui.QMainWindow):
 
     def writeText(self):
         print "write"
-        text = str(self.ui.textEdit.text())
+        text = unicode(self.ui.textEdit.text(), 'latin_1')
         dst = int(self.ui.dstEdit.text())
         text = text + "   "
         self.sendPacket(dst, self.CMD_WRITE_TEXT, map(ord, text))
 
     def scrollText(self):
         print "scroll"
-        text = str(self.ui.textEdit.text())
+        text = unicode(self.ui.textEdit.text(), 'latin_1')
         dst = int(self.ui.dstEdit.text())
         text = "\x02" + text + "   "
         self.sendPacket(dst, self.CMD_TEMP_MESSAGE, map(ord, text))
