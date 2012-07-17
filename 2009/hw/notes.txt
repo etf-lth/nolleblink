@@ -1,0 +1,77 @@
+size:
+70x52 mm   (69.8375 x 52.06)
+
+
+PCB Cart:
+
+1.6 mm
+HASL
+35 µm
+.2 ( ~8 mil)
+.3 (~12 mil)
+.4 (~16 mil)
+<300
+
+mask: both
+non-peelable
+mask color: WHITE
+matt: no
+silk: both sides
+silk color: black
+gold fingers: no
+no slots
+UL marking: yes, bottom copper
+date code marking: close to UL
+
+
+
+
+-----------------------spec----------------------
+	
+
+Material: 	FR4
+Layers: 	2
+Material Details: 	Standard Tg 140C
+Reorder Status *: 	--
+Board Size (width) *: 	70 mm
+Board Size (height) *: 	52 mm
+Quantity *: 	150  pcs
+Different Design in Panel *: 	--
+Route Process *: 	--
+Thickness (Finished Board): 	1.6 mm
+Surface Finish: 	HASL -Hot Air Solder Leveling
+Copper Weight (Finished): 	35 um
+Min. Tracing/Spacing: 	0.20 mm
+Min. Annular Ring: 	0.30 mm
+Smallest Holes: 	0.40 mm
+Holes Numbers: 	Under 300
+Surface Mount: 	1 side
+Soldermask: 	Both Sides
+Peelable Soldermask: 	None
+Soldermask Color: 	White
+Matt Color (only add to Green or Black): 	None
+Silkscreen Legend: 	2 sides
+Silkscreen Legend Color: 	Black
+Gold Fingers: 	No
+Gold Fingers Chamfer: 	None
+Slots in Board: 	No Slot in Board
+Testing: 	Yes
+UL Marking *: 	Yes - add to bottom copper
+Date Code Marking *: 	Yes - add near to UL marking
+Lead Time: 	in 8 days
+
+
+FedEx freight
+Subtotal:	$ 199,97
+Shipping: 	$ 50,63
+Tax: 	$ 0,00
+Order total:	$ 250,60
+
+Google 2009-07-31:
+250.60 U.S. dollars = 1 859.9335 Swedish kronor
+
+-------------------Paypal-----------------
+PCBCART order #151202
+Kredit-/betalkort : MasterCard XXXX-XXXX-XXXX-07741 907,10 SEK
+PayPals omvandlingskurs den 2009-07-311 Svensk krona = 0,131404 Amerikanska dollar
+
