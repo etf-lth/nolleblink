@@ -221,27 +221,27 @@ static void ledUpdateRow(void)
 
 static void ledInitHW(void)
 {
-    RADIO_CSn_PxOUT |= RADIO_CSn_PIN;  // radio cs high  
-    LED_CSn_PxOUT &= ~LED_CSn_PIN;     // led cs low
+    RADIO_CSn_PxOUT |= RADIO_CSn_PIN;   // radio cs high  
+    LED_CSn_PxOUT &= ~LED_CSn_PIN;      // led cs low
 
-    spiTransferFast(BIT6);                 // command byte: write, slave address 0
-    spiTransferFast(0);                    // register IODIRA
+    spiTransferFast(BIT6);              // command byte: write, slave address 0
+    spiTransferFast(0);                 // register IODIRA
     spiTransferFast(0);
     spiTransferFast(0);
 
-    LED_CSn_PxOUT |= LED_CSn_PIN;      // led cs high
+    LED_CSn_PxOUT |= LED_CSn_PIN;       // led cs high
 }
 
 static void ledSetRow(unsigned int leds)
 {
-    RADIO_CSn_PxOUT |= RADIO_CSn_PIN;  // radio cs high
-    LED_CSn_PxOUT &= ~LED_CSn_PIN;     // led cs low
+    RADIO_CSn_PxOUT |= RADIO_CSn_PIN;   // radio cs high
+    LED_CSn_PxOUT &= ~LED_CSn_PIN;      // led cs low
 
-    spiTransferFast(BIT6);                 // command byte: write, slave address 0
-    spiTransferFast(0x12);                 // register GPIOA
+    spiTransferFast(BIT6);              // command byte: write, slave address 0
+    spiTransferFast(0x12);              // register GPIOA
     spiTransferFast(leds & 0xff);
     spiTransferFast(leds >> 8);
 
-    LED_CSn_PxOUT |= LED_CSn_PIN;      // led cs high
+    LED_CSn_PxOUT |= LED_CSn_PIN;       // led cs high
 }
 
