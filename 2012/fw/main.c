@@ -17,6 +17,7 @@
 #include "flash.h"
 #include "protocol.h"
 #include "board.h"
+#include "fifo.h"
 
 typedef struct {
     unsigned char id[2];
@@ -25,17 +26,9 @@ typedef struct {
 
 config_t config;
 unsigned char infection_rate, cure_rate;
+volatile unsigned char isr_radio, isr_timer, isr_uart;
 
-/* 1200 baud at 16MHz */
-//#define BITTIME 1667
-//#define BITTIME15 2500
-
-/* 9600 baud at 16MHz */
-#define BITTIME 208
-#define BITTIME15 312
-
-unsigned char softu_state;
-unsigned char softu_buf;
+FIFO_EXTERN(rx_fifo);
 
 //void uartByteReceived(char c)
 //{
@@ -234,41 +227,17 @@ void heartTimerISR(void)
     flashUpdateTime();
 }
 
-__attribute__((interrupt (TIMERB0_VECTOR)))
-void TIMERB_ISR(void)
-{
-    if (!softu_state) {
-        TBCCTL0 = 0;
-
-        uartPutChar(softu_buf);
-
-        BT_RX_PxIFG &= ~BT_RX_PIN;
-        BT_RX_PxIE |= BT_RX_PIN;
-    } else {
-        if (BT_RX_PxIN & BT_RX_PIN) {
-            softu_buf |= softu_state;
-        }
-        softu_state <<= 1;
-        TBR = 0;
-        TBCCR0 = BITTIME;
-    }
-}
-
 __attribute__((interrupt (PORT2_VECTOR)))
 void PORT2_ISR(void)
 {
-    if (BT_RX_PxIFG & BT_RX_PIN) {
-        softu_buf = 0;
-        softu_state = 1;
-        BT_RX_PxIE &= ~BT_RX_PIN;
-        TBR = 0;
-        TBCCR0 = BITTIME15;
-        TBCCTL0 = CCIE;
+    softu_interrupt();
+}
 
-        BT_RX_PxIFG &= ~BT_RX_PIN;
-    }
-
-    //radioISR();
+__attribute__((interrupt (TIMERA0_VECTOR)))
+void TIMERA_ISR(void)
+{
+    isr_timer = 1;
+    __bic_SR_register_on_exit(LPM1_bits);
 }
 
 int main(void)
@@ -313,23 +282,40 @@ int main(void)
     uartPutString("Nolleblink 2012\n\r");
     uartPutString("(c) ElektroTekniska Föreningen, 2009-2012\n\r");
 
-    // Heartbeat timer
-#if 0
-    TBCCTL0 = CCIE;
-    TBCCR0 = 20000; // 100 Hz
-    TBCTL = TBSSEL_2|MC_2|ID_3; // SMCLK / 8
-#endif
+    // System tick at 400 Hz
+    TACCTL0 = CCIE;
+    TACCR0 = 5000;
+    TACTL = TASSEL_2|MC_1|ID_3;
 
-    // Soft UART for Bluetooth
-    BT_RX_PxSEL &= ~BT_RX_PIN;
-    BT_RX_PxDIR &= ~BT_RX_PIN;
-    BT_RX_PxIES |= BT_RX_PIN;
-    BT_RX_PxIFG &= ~BT_RX_PIN;
-    BT_RX_PxIE |= BT_RX_PIN;
-    TBCTL = TBSSEL_2|MC_1|ID_3; // SMCLK / 8
+    // Initialize Soft UART
+    softu_init();
+    softu_transmit('@');
 
-    // Enable interrupts and go to sleep
-    __bis_SR_register((LPM1_bits)|(GIE));
+    int div = 0;
+
+    while (1) {
+        // Enable interrupts and go to sleep
+        __bis_SR_register((LPM1_bits)|(GIE));
+
+        // Something waked us up, handle it
+        if (isr_timer) {
+            if (++div == 400) {
+                P1OUT ^= 1;
+                div = 0;
+            }
+            isr_timer = 0;
+        }
+
+        if (isr_uart) {
+            isr_uart = 0;
+
+            while (!FIFO_EMPTY(rx_fifo)) {
+                uartPutChar(FIFO_GET(rx_fifo));
+            }
+
+            P1OUT ^= 2;
+        }
+    }
 
     // we won't get here...
     return 0;

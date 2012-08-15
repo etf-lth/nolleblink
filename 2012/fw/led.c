@@ -166,7 +166,6 @@ static void ledUpdateFrame(void)
     }
 }
 
-__attribute__((interrupt (TIMERA0_VECTOR)))
 void ledTimerISR(void)
 {
     if (++scrolldiv == 40) {
