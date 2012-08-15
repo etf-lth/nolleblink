@@ -11,23 +11,40 @@
 #define BITTIME15 312
 
 FIFO_DEF(rx_fifo);
+FIFO_DEF(tx_fifo);
 
-static unsigned char softu_dir;
-static unsigned char softu_state;
-static unsigned char softu_buf;
-
+static volatile unsigned char softu_dir, softu_state, softu_buf;
 extern volatile unsigned char isr_uart;
 
 __attribute__((interrupt (TIMERB0_VECTOR)))
 void TIMERB_ISR(void)
 {
     if (softu_dir) {
-        if (!softu_state) {
-            softu_dir = 0;
-            TBCCTL0 = 0;
-            BT_RX_PxIFG &= ~BT_RX_PIN;
-            BT_RX_PxIE |= BT_RX_PIN;
+        if (softu_state == 0xff) {
+            // stop bit sent. moar?!
+            if (FIFO_EMPTY(tx_fifo)) {
+                // fifo's empty. stop.
+                softu_dir = 0;
+                TBCCTL0 = 0;
+                BT_RX_PxIFG &= ~BT_RX_PIN;
+                BT_RX_PxIE |= BT_RX_PIN;
+            } else {
+                // moar data. send start bit
+                softu_buf = FIFO_GET(tx_fifo);
+                softu_state = 1;
+
+                BT_TX_PxOUT &= ~BT_TX_PIN;
+                TBR = 0;
+                TBCCR0 = BITTIME;
+            }
+        } else if (!softu_state) {
+            // transmit stop bit
+            BT_TX_PxOUT |= BT_TX_PIN;
+            TBR = 0;
+            TBCCR0 = BITTIME;
+            softu_state = 0xff;
         } else {
+            // transmit data bit
             BT_TX_PxOUT &= ~BT_TX_PIN;
             if (softu_buf & softu_state)
                 BT_TX_PxOUT |= BT_TX_PIN;
@@ -72,15 +89,19 @@ void softu_interrupt(void)
 
 void softu_transmit(unsigned char data)
 {
-    softu_buf = data;
-    softu_state = 1;
-    softu_dir = 1;
+    if (!softu_dir) {
+        softu_buf = data;
+        softu_state = 1;
+        softu_dir = 1;
 
-    BT_TX_PxOUT &= ~BT_TX_PIN;
-    TBR = 0;
-    TBCCR0 = BITTIME;
-    TBCCTL0 = CCIE;
-    BT_RX_PxIE &= ~BT_RX_PIN;
+        BT_TX_PxOUT &= ~BT_TX_PIN;
+        TBR = 0;
+        TBCCR0 = BITTIME;
+        TBCCTL0 = CCIE;
+        BT_RX_PxIE &= ~BT_RX_PIN;
+    } else {
+        FIFO_PUT(tx_fifo, data);
+    }
 }
 
 void softu_init(void)

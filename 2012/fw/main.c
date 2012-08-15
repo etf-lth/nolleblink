@@ -289,7 +289,12 @@ int main(void)
 
     // Initialize Soft UART
     softu_init();
-    softu_transmit('@');
+    /*softu_transmit('@');
+    softu_transmit('k');
+    softu_transmit('o');
+    softu_transmit('n');
+    softu_transmit('g');
+    softu_transmit('o');*/
 
     int div = 0;
 
@@ -310,7 +315,9 @@ int main(void)
             isr_uart = 0;
 
             while (!FIFO_EMPTY(rx_fifo)) {
-                uartPutChar(FIFO_GET(rx_fifo));
+                unsigned char c = FIFO_GET(rx_fifo);
+                uartPutChar(c);
+                //softu_transmit(c);
             }
 
             P1OUT ^= 2;
