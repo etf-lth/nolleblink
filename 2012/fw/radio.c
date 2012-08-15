@@ -27,7 +27,7 @@ char radioReceivePacket(char *);
 
 const char radioConfig[][2] = {
     {CC2500_IOCFG2,     0x2E},
-    {CC2500_IOCFG0,     0x2E}, //0x06},
+    {CC2500_IOCFG0,     0x06},
     {CC2500_PKTLEN,     PKTLEN},
     {CC2500_PKTCTRL1,   0x44},
     {CC2500_PKTCTRL0,   0x44},
@@ -60,13 +60,11 @@ void radioInit(void)
     radioWriteSettings();
 
     // Radio GDO0 pin as input with interrupt on falling edge
-#if 0
     RADIO_GDO0_PxSEL &= ~RADIO_GDO0_PIN;
     RADIO_GDO0_PxDIR &= ~RADIO_GDO0_PIN;
     RADIO_GDO0_PxIES |= RADIO_GDO0_PIN;
     RADIO_GDO0_PxIFG &= ~RADIO_GDO0_PIN;
     RADIO_GDO0_PxIE |= RADIO_GDO0_PIN;
-#endif
 
     // Switch to RX mode
     radioCommand(CC2500_SRX);
@@ -112,18 +110,9 @@ void __attribute__ ((weak)) radioPacketReceived(char *buf, char len)
 
 void radioISR(void)
 {
-    // If GDO0 is fired...
-    if (RADIO_GDO0_PxIFG & RADIO_GDO0_PIN) {
-      //uartPutString("Packet interrupt\n");
-
-      //char len = sizeof(radioBuffer);
-        if (radioReceivePacket(radioBuffer/*, &len*/)) {
-            P1OUT ^= 1;
-	        //uartPutString("Got packet data.\n");
-	        radioPacketReceived(radioBuffer, PKTLEN);
-        }
-
-        RADIO_GDO0_PxIFG &= ~RADIO_GDO0_PIN;
+    if (radioReceivePacket(radioBuffer/*, &len*/)) {
+        //P1OUT ^= 1;
+	    radioPacketReceived(radioBuffer, PKTLEN);
     }
 }
 
@@ -203,7 +192,7 @@ char radioReadStatus(char addr)
 
 void radioTransmitPacket(char *buf)
 {
-    P1OUT ^= 2;
+    //P1OUT ^= 2;
 
     // Fill TX Buffer
     radioWriteRegisters(CC2500_TXFIFO, buf, PKTLEN);

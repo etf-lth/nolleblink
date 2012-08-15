@@ -59,6 +59,9 @@ void calcChecksum(char *buf)
 
 void radioPacketReceived(char *buf, char len)
 {
+	uartPutString("Got packet data.\n\r");
+    P1OUT ^= 2;
+
     packet_t *pkt = (packet_t *)buf;
 
     if ((pkt->to[0] || pkt->to[1])
@@ -231,6 +234,12 @@ __attribute__((interrupt (PORT2_VECTOR)))
 void PORT2_ISR(void)
 {
     softu_interrupt();
+
+    if (RADIO_GDO0_PxIFG & RADIO_GDO0_PIN) {
+        isr_radio = 1;
+        RADIO_GDO0_PxIFG &= ~RADIO_GDO0_PIN;
+        __bic_SR_register_on_exit(LPM1_bits);
+    }
 }
 
 __attribute__((interrupt (TIMERA0_VECTOR)))
@@ -280,7 +289,7 @@ int main(void)
     // Init debug UART
     uartInit();
     uartPutString("Nolleblink 2012\n\r");
-    uartPutString("(c) ElektroTekniska Föreningen, 2009-2012\n\r");
+    uartPutString("(c) ElektroTekniska Föreningen, 2009-2012\n\r\n\r");
 
     // System tick at 400 Hz
     TACCTL0 = CCIE;
@@ -289,12 +298,6 @@ int main(void)
 
     // Initialize Soft UART
     softu_init();
-    /*softu_transmit('@');
-    softu_transmit('k');
-    softu_transmit('o');
-    softu_transmit('n');
-    softu_transmit('g');
-    softu_transmit('o');*/
 
     int div = 0;
 
@@ -303,24 +306,35 @@ int main(void)
         __bis_SR_register((LPM1_bits)|(GIE));
 
         // Something waked us up, handle it
-        if (isr_timer) {
-            if (++div == 400) {
-                P1OUT ^= 1;
-                div = 0;
-            }
-            isr_timer = 0;
-        }
-
-        if (isr_uart) {
-            isr_uart = 0;
-
-            while (!FIFO_EMPTY(rx_fifo)) {
-                unsigned char c = FIFO_GET(rx_fifo);
-                uartPutChar(c);
-                //softu_transmit(c);
+        
+        while (isr_timer | isr_radio | isr_uart) {
+            // A system tick?
+            if (isr_timer) {
+                if (++div == 400) {
+                    P1OUT ^= 1;
+                    div = 0;
+                }
+                isr_timer = 0;
             }
 
-            P1OUT ^= 2;
+            // A packet on the radio?
+            if (isr_radio) {
+                isr_radio = 0;
+                radioISR();
+            }
+
+            // Something from the bluetooth module?
+            if (isr_uart) {
+                isr_uart = 0;
+
+                while (!FIFO_EMPTY(rx_fifo)) {
+                    unsigned char c = FIFO_GET(rx_fifo);
+                    uartPutChar(c);
+                    //softu_transmit(c);
+                }
+
+                P1OUT ^= 2;
+            }
         }
     }
 
