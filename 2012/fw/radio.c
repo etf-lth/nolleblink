@@ -7,8 +7,7 @@
  *
  */
 
-#include <io.h>
-#include <signal.h>
+#include <msp430.h>
 
 #include "radio.h"
 #include "spi.h"
@@ -28,7 +27,7 @@ char radioReceivePacket(char *);
 
 const char radioConfig[][2] = {
     {CC2500_IOCFG2,     0x2E},
-    {CC2500_IOCFG0,     0x06},
+    {CC2500_IOCFG0,     0x2E}, //0x06},
     {CC2500_PKTLEN,     PKTLEN},
     {CC2500_PKTCTRL1,   0x44},
     {CC2500_PKTCTRL0,   0x44},
@@ -61,11 +60,13 @@ void radioInit(void)
     radioWriteSettings();
 
     // Radio GDO0 pin as input with interrupt on falling edge
-    RADIO_GDOx_PxSEL &= ~(RADIO_GDO0_PIN|RADIO_GDO2_PIN);
-    RADIO_GDOx_PxDIR &= ~(RADIO_GDO0_PIN|RADIO_GDO2_PIN);
-    RADIO_GDOx_PxIES |= RADIO_GDO0_PIN;
-    RADIO_GDOx_PxIFG &= ~RADIO_GDO0_PIN;
-    RADIO_GDOx_PxIE |= RADIO_GDO0_PIN;
+#if 0
+    RADIO_GDO0_PxSEL &= ~RADIO_GDO0_PIN;
+    RADIO_GDO0_PxDIR &= ~RADIO_GDO0_PIN;
+    RADIO_GDO0_PxIES |= RADIO_GDO0_PIN;
+    RADIO_GDO0_PxIFG &= ~RADIO_GDO0_PIN;
+    RADIO_GDO0_PxIE |= RADIO_GDO0_PIN;
+#endif
 
     // Switch to RX mode
     radioCommand(CC2500_SRX);
@@ -90,6 +91,8 @@ void radioReset(void)
 
     // Issue a soft reset
     radioCommand(CC2500_SRES);
+
+    radioDelay(2000);
 }
 
 void radioWriteSettings(void)
@@ -107,10 +110,10 @@ void __attribute__ ((weak)) radioPacketReceived(char *buf, char len)
 {
 }
 
-interrupt (PORT2_VECTOR) radioISR(void)
+void radioISR(void)
 {
     // If GDO0 is fired...
-    if (RADIO_GDOx_PxIFG & RADIO_GDO0_PIN) {
+    if (RADIO_GDO0_PxIFG & RADIO_GDO0_PIN) {
       //uartPutString("Packet interrupt\n");
 
       //char len = sizeof(radioBuffer);
@@ -120,7 +123,7 @@ interrupt (PORT2_VECTOR) radioISR(void)
 	        radioPacketReceived(radioBuffer, PKTLEN);
         }
 
-        RADIO_GDOx_PxIFG &= ~RADIO_GDO0_PIN;
+        RADIO_GDO0_PxIFG &= ~RADIO_GDO0_PIN;
     }
 }
 
@@ -209,9 +212,9 @@ void radioTransmitPacket(char *buf)
     radioCommand(CC2500_STX);
 
     // Wait for the transmission to complete
-    while (!(RADIO_GDOx_PxIN & RADIO_GDO0_PIN)) ;
-    while (RADIO_GDOx_PxIN & RADIO_GDO0_PIN) ;
-    RADIO_GDOx_PxIFG &= ~RADIO_GDO0_PIN;
+    while (!(RADIO_GDO0_PxIN & RADIO_GDO0_PIN)) ;
+    while (RADIO_GDO0_PxIN & RADIO_GDO0_PIN) ;
+    RADIO_GDO0_PxIFG &= ~RADIO_GDO0_PIN;
 
     //radioCommand(CC2500_SRX);
 }

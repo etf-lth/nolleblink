@@ -8,7 +8,7 @@ MCU     =msp430f2274
 CFLAGS +=-Wall -g
 
 TARGET  =nolleblink12.hex
-OBJS    =main.o spi.o led.o radio.o flash.o ledfont.o
+OBJS    =main.o spi.o led.o radio.o flash.o ledfont.o uart.o
 
 all: $(TARGET)
 

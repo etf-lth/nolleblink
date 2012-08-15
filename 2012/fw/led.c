@@ -8,8 +8,7 @@
  *
  */
 
-#include <io.h>
-#include <signal.h>
+#include <msp430.h>
 #include <string.h>
 
 #include "led.h"
@@ -167,7 +166,8 @@ static void ledUpdateFrame(void)
     }
 }
 
-interrupt (TIMERA0_VECTOR) ledTimerISR(void)
+__attribute__((interrupt (TIMERA0_VECTOR)))
+void ledTimerISR(void)
 {
     if (++scrolldiv == 40) {
         ledUpdateFrame();

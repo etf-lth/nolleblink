@@ -7,8 +7,7 @@
  *
  */
 
-#include <io.h>
-#include <signal.h>
+#include <msp430.h>
 #include <string.h>
 
 #include "spi.h"
@@ -17,6 +16,7 @@
 #include "uart.h"
 #include "flash.h"
 #include "protocol.h"
+#include "board.h"
 
 typedef struct {
     unsigned char id[2];
@@ -25,6 +25,17 @@ typedef struct {
 
 config_t config;
 unsigned char infection_rate, cure_rate;
+
+/* 1200 baud at 16MHz */
+//#define BITTIME 1667
+//#define BITTIME15 2500
+
+/* 9600 baud at 16MHz */
+#define BITTIME 208
+#define BITTIME15 312
+
+unsigned char softu_state;
+unsigned char softu_buf;
 
 //void uartByteReceived(char c)
 //{
@@ -187,7 +198,7 @@ void radioPacketReceived(char *buf, char len)
     }
 }
 
-interrupt (TIMERB0_VECTOR) heartTimerISR(void)
+void heartTimerISR(void)
 {
     TBR = 0;
 
@@ -223,6 +234,43 @@ interrupt (TIMERB0_VECTOR) heartTimerISR(void)
     flashUpdateTime();
 }
 
+__attribute__((interrupt (TIMERB0_VECTOR)))
+void TIMERB_ISR(void)
+{
+    if (!softu_state) {
+        TBCCTL0 = 0;
+
+        uartPutChar(softu_buf);
+
+        BT_RX_PxIFG &= ~BT_RX_PIN;
+        BT_RX_PxIE |= BT_RX_PIN;
+    } else {
+        if (BT_RX_PxIN & BT_RX_PIN) {
+            softu_buf |= softu_state;
+        }
+        softu_state <<= 1;
+        TBR = 0;
+        TBCCR0 = BITTIME;
+    }
+}
+
+__attribute__((interrupt (PORT2_VECTOR)))
+void PORT2_ISR(void)
+{
+    if (BT_RX_PxIFG & BT_RX_PIN) {
+        softu_buf = 0;
+        softu_state = 1;
+        BT_RX_PxIE &= ~BT_RX_PIN;
+        TBR = 0;
+        TBCCR0 = BITTIME15;
+        TBCCTL0 = CCIE;
+
+        BT_RX_PxIFG &= ~BT_RX_PIN;
+    }
+
+    //radioISR();
+}
+
 int main(void)
 {
     // Disable watchdog
@@ -237,10 +285,11 @@ int main(void)
     spiInit();
 
     // Init LED display
-    ledInit();
+    //ledInit();
 
     infection_rate = cure_rate = 0;
 
+#if 0
     // Read configuration
     if (flashRead((char *)&config, sizeof(config))) {
         if (!config.text[0]) {
@@ -254,17 +303,30 @@ int main(void)
         config.id[1] = 0x0f;
         ledSetState(LED_STATE_SCROLL_BARS);
     }
+#endif
 
     // Init radio
     radioInit();
 
     // Init debug UART
-    //uartInit();
+    uartInit();
+    uartPutString("Nolleblink 2012\n\r");
+    uartPutString("(c) ElektroTekniska Föreningen, 2009-2012\n\r");
 
     // Heartbeat timer
+#if 0
     TBCCTL0 = CCIE;
     TBCCR0 = 20000; // 100 Hz
     TBCTL = TBSSEL_2|MC_2|ID_3; // SMCLK / 8
+#endif
+
+    // Soft UART for Bluetooth
+    BT_RX_PxSEL &= ~BT_RX_PIN;
+    BT_RX_PxDIR &= ~BT_RX_PIN;
+    BT_RX_PxIES |= BT_RX_PIN;
+    BT_RX_PxIFG &= ~BT_RX_PIN;
+    BT_RX_PxIE |= BT_RX_PIN;
+    TBCTL = TBSSEL_2|MC_1|ID_3; // SMCLK / 8
 
     // Enable interrupts and go to sleep
     __bis_SR_register((LPM1_bits)|(GIE));

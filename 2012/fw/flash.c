@@ -8,7 +8,7 @@
  *
  */
 
-#include <io.h>
+#include <msp430.h>
 #include <string.h>
 
 #include "flash.h"

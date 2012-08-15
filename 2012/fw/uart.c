@@ -7,8 +7,7 @@
  *
  */
 
-#include <io.h>
-#include <signal.h>
+#include <msp430.h>
 
 #include "uart.h"
 #include "board.h"
@@ -52,7 +51,8 @@ void __attribute__ ((weak)) uartByteReceived(char c)
 {
 }
 
-interrupt (USCIAB0RX_VECTOR) uartISR (void)
+__attribute__((interrupt (USCIAB0RX_VECTOR)))
+void uartISR (void)
 {
     char ch = UCA0RXBUF;
     uartByteReceived(ch);
