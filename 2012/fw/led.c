@@ -44,9 +44,9 @@ void ledInit(void)
     RADIO_CSn_PxOUT |= RADIO_CSn_PIN;
 
     // Init LED multiplex timer
-    TACCTL0 = CCIE;
-    TACCR0 = 20000;
-    TACTL = TASSEL_2|MC_2;
+    //TACCTL0 = CCIE;
+    //TACCR0 = 20000;
+    //TACTL = TASSEL_2|MC_2;
 
     ledInitHW();
 }
@@ -166,9 +166,9 @@ static void ledUpdateFrame(void)
     }
 }
 
-void ledTimerISR(void)
+void ledTick(void)
 {
-    if (++scrolldiv == 40) {
+    if (++scrolldiv == 25) {
         ledUpdateFrame();
         scrolldiv = 0;
     }

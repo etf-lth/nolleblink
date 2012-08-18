@@ -47,6 +47,13 @@ void uartPutString(const char *c)
     }
 }
 
+void uartPutByte(unsigned char c)
+{
+    const char hex[] = "0123456789abcdef";
+    uartPutChar(hex[c >> 4]);
+    uartPutChar(hex[c & 0xf]);
+}
+
 void __attribute__ ((weak)) uartByteReceived(char c)
 {
 }

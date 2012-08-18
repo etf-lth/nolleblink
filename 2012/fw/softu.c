@@ -7,8 +7,8 @@
 //#define BITTIME15 2500
 
 /* 9600 baud at 16MHz */
-#define BITTIME 208
-#define BITTIME15 312
+#define BITTIME 208-10
+#define BITTIME15 312-10
 
 FIFO_DEF(rx_fifo);
 FIFO_DEF(tx_fifo);

@@ -17,6 +17,7 @@
 void uartInit(void);
 char uartGetChar(void);
 void uartPutChar(char);
+void uartPutByte(unsigned char);
 void uartPutString(const char *c);
 
 extern void uartByteReceived(char);

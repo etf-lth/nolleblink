@@ -64,6 +64,7 @@ void flashWrite(const char *buf, char len)
     BCSCTL2 &= ~(BIT5|BIT4);
 }
 
+#if 0
 int flashGetTime(void)
 {
     if (FLASH_RT_BASE[0] != ~FLASH_RT_BASE[1]) {
@@ -95,4 +96,5 @@ void flashUpdateTime(void)
     DCOCTL = CALDCO_16MHZ;
     BCSCTL2 &= ~(BIT5|BIT4);
 }
+#endif
 

@@ -57,9 +57,20 @@ void calcChecksum(char *buf)
     pkt->checksum = checksum;
 }
 
+void appSetText(char *str) {
+    strncpy(config.text, str, sizeof(config.text));
+    flashWrite((const char *)&config, sizeof(config));
+    ledSetState(LED_STATE_SCROLL_TEXT);
+    ledSetText(config.text);
+}
+
+char *appGetText(void) {
+    return config.text;
+}
+
 void radioPacketReceived(char *buf, char len)
 {
-	uartPutString("Got packet data.\n\r");
+    //uartPutString("Got packet data.\n\r");
     P1OUT ^= 2;
 
     packet_t *pkt = (packet_t *)buf;
@@ -130,10 +141,7 @@ void radioPacketReceived(char *buf, char len)
         } else {
 	        pkt->payload[sizeof(pkt->payload)-1] = 0;
         }
-        strncpy(config.text, pkt->payload, sizeof(config.text));
-        flashWrite((const char *)&config, sizeof(config));
-        ledSetState(LED_STATE_SCROLL_TEXT);
-        ledSetText(config.text);
+        appSetText(pkt->payload);
         break;
 
     case CMD_WRITE_ID:
@@ -205,12 +213,12 @@ void heartTimerISR(void)
     div = 0;
 
     // 1 Hz
-    unsigned short time = flashGetTime();
+    //unsigned short time = flashGetTime();
 
     packet_t pkt = {
         .type = CMD_HEARTBEAT,
         .from = {config.id[0], config.id[1]},
-        .payload = {infection_rate, cure_rate, (time >> 8) & 0xff, time & 0xff}
+        .payload = {infection_rate, cure_rate}
     };
 
     calcChecksum((char *)&pkt);
@@ -221,13 +229,13 @@ void heartTimerISR(void)
         ledSetState(LED_STATE_SCROLL_TEXT);
     }
 
-    static short rtdiv = 0;
+    /*static short rtdiv = 0;
     if (rtdiv++ < 60) {
         return;
     }
     rtdiv = 0;
 
-    flashUpdateTime();
+    flashUpdateTime();*/
 }
 
 __attribute__((interrupt (PORT2_VECTOR)))
@@ -263,11 +271,10 @@ int main(void)
     spiInit();
 
     // Init LED display
-    //ledInit();
+    ledInit();
 
     infection_rate = cure_rate = 0;
 
-#if 0
     // Read configuration
     if (flashRead((char *)&config, sizeof(config))) {
         if (!config.text[0]) {
@@ -281,7 +288,6 @@ int main(void)
         config.id[1] = 0x0f;
         ledSetState(LED_STATE_SCROLL_BARS);
     }
-#endif
 
     // Init radio
     radioInit();
@@ -310,6 +316,8 @@ int main(void)
         while (isr_timer | isr_radio | isr_uart) {
             // A system tick?
             if (isr_timer) {
+                ledTick();
+
                 if (++div == 400) {
                     P1OUT ^= 1;
                     div = 0;
@@ -329,7 +337,7 @@ int main(void)
 
                 while (!FIFO_EMPTY(rx_fifo)) {
                     unsigned char c = FIFO_GET(rx_fifo);
-                    uartPutChar(c);
+                    bt_process(c);
                     //softu_transmit(c);
                 }
 
