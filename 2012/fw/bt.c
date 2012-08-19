@@ -65,10 +65,28 @@ void bt_command(char *str)
         break;
 
     case 's':
-        if (str[1] < '1' || str[1] > '9')
+        if (str[1] < '0' || str[1] > '9')
             goto error;
 
-        ledSetTempText(str[1] - '0', &str[2]);
+        if (str[1] == '0') {
+            ledSetText(&str[2]);
+        } else {
+            ledSetTempText(str[1] - '0', &str[2]);
+        }
+        break;
+
+    case 'i':
+        {
+            const char hex[] = "0123456789abcdef";
+            char buf[5];
+            unsigned short id = appGetId();
+            buf[0] = hex[id >> 12];
+            buf[1] = hex[(id >> 8) & 0x0f];
+            buf[2] = hex[(id >> 4) & 0x0f];
+            buf[3] = hex[(id) & 0x0f];
+            buf[4] = '\0';
+            bt_write(buf);
+        }
         break;
 
     case '\0':
@@ -91,27 +109,27 @@ void bt_packet(unsigned char type, unsigned char len, unsigned char *data)
 
     switch (type) {
     case 0x00:
-        uartPutString("Bluetooth controller booted.\n\rFirmware: ");
+        //uartPutString("Bluetooth controller booted.\n\rFirmware: ");
         data[len] = '\0';
         strcpy(bt_version, data);
-        uartPutString(data);
-        uartPutString("\r\n");
+        /*uartPutString(data);
+        uartPutString("\r\n");*/
 
         bt_friendly_name("Kongos blinkmojt"); 
         break;
 
     case 0x01:
         cmdidx = 0;
-        uartPutString("Connected: ");
+        /*uartPutString("Connected: ");
         data[len] = '\0';
         uartPutString(data);
-        uartPutString("\r\n");
+        uartPutString("\r\n");*/
 
         bt_write("#nolleblink2012\r\n");
         break;
 
     case 0x02:
-        uartPutString("Disconnected.\n\r");
+        //uartPutString("Disconnected.\n\r");
         break;
 
     case 0x03:

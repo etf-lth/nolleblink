@@ -68,6 +68,10 @@ char *appGetText(void) {
     return config.text;
 }
 
+unsigned short appGetId(void) {
+    return config.id;
+}
+
 void radioPacketReceived(char *buf, char len)
 {
     //uartPutString("Got packet data.\n\r");
@@ -312,7 +316,6 @@ int main(void)
         __bis_SR_register((LPM1_bits)|(GIE));
 
         // Something waked us up, handle it
-        
         while (isr_timer | isr_radio | isr_uart) {
             // A system tick?
             if (isr_timer) {
@@ -329,6 +332,7 @@ int main(void)
             if (isr_radio) {
                 isr_radio = 0;
                 radioISR();
+                P1OUT ^= 2;
             }
 
             // Something from the bluetooth module?
@@ -338,10 +342,7 @@ int main(void)
                 while (!FIFO_EMPTY(rx_fifo)) {
                     unsigned char c = FIFO_GET(rx_fifo);
                     bt_process(c);
-                    //softu_transmit(c);
                 }
-
-                P1OUT ^= 2;
             }
         }
     }

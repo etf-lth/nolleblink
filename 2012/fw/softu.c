@@ -75,7 +75,7 @@ void TIMERB_ISR(void)
 
 void softu_interrupt(void)
 {
-    if (BT_RX_PxIFG & BT_RX_PIN) {
+    if ((!softu_dir) && (BT_RX_PxIFG & BT_RX_PIN)) {
         softu_buf = 0;
         softu_state = 1;
         BT_RX_PxIE &= ~BT_RX_PIN;
