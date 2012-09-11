@@ -168,7 +168,7 @@ static void ledUpdateFrame(void)
 
 void ledTick(void)
 {
-    if (++scrolldiv == 25) {
+    if (++scrolldiv == 50) {
         ledUpdateFrame();
         scrolldiv = 0;
     }
