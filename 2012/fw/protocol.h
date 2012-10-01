@@ -26,6 +26,7 @@ enum {
     CMD_FRAMEBUFFER,
     CMD_HEARTBEAT,
     CMD_READ_TEXT,
+    CMD_FRIENDLY_NAME,
 };
 
 #endif

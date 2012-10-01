@@ -1,7 +1,12 @@
 #include <msp430.h>
 #include <stdio.h>
+#include <string.h>
+#include "softu.h"
+#include "led.h"
 
-unsigned char bt_version[64];
+//#define DEBUG
+
+unsigned char bt_version[64], bt_bdaddr[18];
 
 void bt_send(unsigned char type, unsigned char *data, unsigned char len)
 {
@@ -41,7 +46,7 @@ void bt_command(char *str)
                 bt_write("(c) 2009-2012 ElektroTekniska Föreningen");
                 break;
             case '3':
-                bt_write("http://www.etf.nu");
+                bt_write(bt_bdaddr);
                 break;
             case '4':
                 bt_write(bt_version);
@@ -62,13 +67,47 @@ void bt_command(char *str)
 
     case 'T':
         appSetText(&str[1]);
+        bt_write("OK");
         break;
 
     case 's':
-        if (str[1] < '1' || str[1] > '9')
+        if (str[1] < '0' || str[1] > '9')
             goto error;
 
-        ledSetTempText(str[1] - '0', &str[2]);
+        if (str[1] == '0') {
+            ledSetText(&str[2]);
+        } else {
+            ledSetTempText(str[1] - '0', &str[2]);
+        }
+        bt_write("OK");
+        break;
+
+    case 'i':
+        {
+            char buf[5];
+            appIdToHex(buf);
+            bt_write(buf);
+        }
+        break;
+
+    case 'I':
+        {
+            unsigned short id = appHexToId(&str[1]);
+            if (id == 0xffff)
+                goto error;
+            appSetId(id);
+            bt_write("OK");
+        }
+        break;
+
+    case 'z':
+        {
+            unsigned char buf[8];
+            appIdToHex(buf);
+            buf[4] = buf[5] = buf[6] = ' ';
+            buf[7] = 0;
+            ledSetTempText(3, buf);
+        }
         break;
 
     case '\0':
@@ -91,27 +130,33 @@ void bt_packet(unsigned char type, unsigned char len, unsigned char *data)
 
     switch (type) {
     case 0x00:
-        uartPutString("Bluetooth controller booted.\n\rFirmware: ");
         data[len] = '\0';
         strcpy(bt_version, data);
+
+#ifdef DEBUG
+        uartPutString("Bluetooth controller booted.\n\rFirmware: ");
         uartPutString(data);
         uartPutString("\r\n");
-
-        bt_friendly_name("Kongos blinkmojt"); 
+#endif
         break;
 
     case 0x01:
         cmdidx = 0;
+
+#ifdef DEBUG
         uartPutString("Connected: ");
         data[len] = '\0';
         uartPutString(data);
         uartPutString("\r\n");
+#endif
 
         bt_write("#nolleblink2012\r\n");
         break;
 
     case 0x02:
+#ifdef DEBUG
         uartPutString("Disconnected.\n\r");
+#endif
         break;
 
     case 0x03:
@@ -127,6 +172,24 @@ void bt_packet(unsigned char type, unsigned char len, unsigned char *data)
                     bt_command(cmdbuf);
                     cmdidx = 0;
                 }
+            }
+        }
+        break;
+
+    case 0x06:
+        data[len] = '\0';
+
+#ifdef DEBUG
+        uartPutString("BDADDR: ");
+        uartPutString(data);
+        uartPutString("\r\n");
+#endif
+
+        strcpy(bt_bdaddr, data);
+        {
+            char *f = appGetFriendlyName();
+            if (*f) {
+                bt_friendly_name(f); 
             }
         }
         break;

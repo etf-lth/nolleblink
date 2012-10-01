@@ -37,12 +37,15 @@ char flashRead(char *buf, char len)
 
 void flashWrite(const char *buf, char len)
 {
-    BCSCTL1 = CALBC1_1MHZ;      // Set DCO to 1MHz
-    DCOCTL = CALDCO_1MHZ;
-    FCTL2 = FWKEY|FSSEL0|FN1;   // MCLK/3 for Flash Timing Generator
+    //BCSCTL1 = CALBC1_1MHZ;      // Set DCO to 1MHz
+    //DCOCTL = CALDCO_1MHZ;
+    FCTL2 = FWKEY|FSSEL0|FN5;   // MCLK/3 for Flash Timing Generator
     FCTL3 = FWKEY;              // Clear Lock bit
     FCTL1 = FWKEY|ERASE;        // Set Erase bit
-    *FLASH_MAIN_BASE = 0;       // Dummy write to erase Flash seg
+    FLASH_MAIN_BASE[0] = 0;       // Dummy write to erase Flash seg
+    FCTL3 = FWKEY;              // Clear Lock bit
+    FCTL1 = FWKEY|ERASE;        // Set Erase bit
+    FLASH_MAIN_BASE[64] = 0;       // Dummy write to erase Flash seg
 
     FCTL1 = FWKEY|WRT;          // Set WRT bit for write operation
 	
@@ -59,9 +62,9 @@ void flashWrite(const char *buf, char len)
 
     FCTL1 = FWKEY;              // Clear WRT bit
     FCTL3 = FWKEY|LOCK;         // Set LOCK bit
-    BCSCTL1 = CALBC1_16MHZ;     // Set DCO to 16MHz
-    DCOCTL = CALDCO_16MHZ;
-    BCSCTL2 &= ~(BIT5|BIT4);
+    //BCSCTL1 = CALBC1_16MHZ;     // Set DCO to 16MHz
+    //DCOCTL = CALDCO_16MHZ;
+    //BCSCTL2 &= ~(BIT5|BIT4);
 }
 
 #if 0

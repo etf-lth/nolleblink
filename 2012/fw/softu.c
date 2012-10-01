@@ -1,6 +1,7 @@
 #include <msp430.h>
 #include "board.h"
 #include "fifo.h"
+#include "softu.h"
 
 /* 1200 baud at 16MHz */
 //#define BITTIME 1667
@@ -28,6 +29,7 @@ void TIMERB_ISR(void)
                 TBCCTL0 = 0;
                 BT_RX_PxIFG &= ~BT_RX_PIN;
                 BT_RX_PxIE |= BT_RX_PIN;
+                TACCTL0 = CCIE;
             } else {
                 // moar data. send start bit
                 softu_buf = FIFO_GET(tx_fifo);
@@ -45,9 +47,11 @@ void TIMERB_ISR(void)
             softu_state = 0xff;
         } else {
             // transmit data bit
-            BT_TX_PxOUT &= ~BT_TX_PIN;
-            if (softu_buf & softu_state)
+            if (softu_buf & softu_state) {
                 BT_TX_PxOUT |= BT_TX_PIN;
+            } else {
+                BT_TX_PxOUT &= ~BT_TX_PIN;
+            }
             softu_state <<= 1;
             TBR = 0;
             TBCCR0 = BITTIME;
@@ -76,12 +80,14 @@ void TIMERB_ISR(void)
 void softu_interrupt(void)
 {
     if (BT_RX_PxIFG & BT_RX_PIN) {
-        softu_buf = 0;
-        softu_state = 1;
-        BT_RX_PxIE &= ~BT_RX_PIN;
-        TBR = 0;
-        TBCCR0 = BITTIME15;
-        TBCCTL0 = CCIE;
+        if (!softu_dir) {
+            softu_buf = 0;
+            softu_state = 1;
+            BT_RX_PxIE &= ~BT_RX_PIN;
+            TBR = 0;
+            TBCCR0 = BITTIME15;
+            TBCCTL0 = CCIE;
+        }
 
         BT_RX_PxIFG &= ~BT_RX_PIN;
     }
@@ -94,12 +100,16 @@ void softu_transmit(unsigned char data)
         softu_state = 1;
         softu_dir = 1;
 
+        TACCTL0 = 0;
+
+        // send start bit
         BT_TX_PxOUT &= ~BT_TX_PIN;
         TBR = 0;
         TBCCR0 = BITTIME;
         TBCCTL0 = CCIE;
         BT_RX_PxIE &= ~BT_RX_PIN;
     } else {
+        while (FIFO_LENGTH(tx_fifo) >= 60) ;
         FIFO_PUT(tx_fifo, data);
     }
 }
