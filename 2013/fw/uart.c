@@ -18,6 +18,7 @@
 //extern volatile char isr_uart;
 
 #define UART_PxSEL  P1SEL
+#define UART_PxSEL2 P1SEL2
 #define UART_PxDIR  P1DIR
 #define UART_PxOUT  P1OUT
 #define UART_TX_PIN BIT2
@@ -26,7 +27,7 @@
 void uart_init(void)
 {
     UCA0CTL1 |= UCSWRST;
-    UCA0CTL1 |= UCSSEL_2;
+    UCA0CTL1 |= UCSSEL_2 | UCBRKIE;
 
     UCA0BR0 = _BR0_9600;
     UCA0BR1 = _BR1_9600;
@@ -34,6 +35,7 @@ void uart_init(void)
     UCA0MCTL = UCBRS_2;
 
     UART_PxSEL |= UART_TX_PIN | UART_RX_PIN;
+    UART_PxSEL2 |= UART_TX_PIN | UART_RX_PIN;
     UART_PxDIR |= UART_TX_PIN;
     UART_PxDIR &= ~UART_RX_PIN;
 
@@ -67,6 +69,12 @@ void uart_puts(const char *c)
     }
 }
 
+void uart_putbrk(void)
+{
+    UCA0CTL1 |= UCTXBRK;
+    uart_putch(0);
+}
+
 void uart_puthex(unsigned char c)
 {
     const char hex[] = "0123456789abcdef";
@@ -78,12 +86,20 @@ void __attribute__ ((weak)) uart_received(char c)
 {
 }
 
+void __attribute__ ((weak)) uart_break(char c)
+{
+}
+
 __attribute__((interrupt (USCIAB0RX_VECTOR)))
 void uart_rxisr(void)
 {
     if (IFG2 & UCA0RXIFG) {
-        char ch = UCA0RXBUF;
-        uart_received(ch);
+        if (UCA0STAT & UCBRK) {
+            uart_break(UCA0RXBUF);
+        } else {
+            char ch = UCA0RXBUF;
+            uart_received(ch);
+        }
         /*FIFO_PUT(bt_rx, ch);
         isr_uart = 1;*/
     }

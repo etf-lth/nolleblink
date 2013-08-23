@@ -39,7 +39,7 @@ void ledInit(void)
 
     // Init LED multiplex timer
     TACCTL0 = CCIE;
-    TACCR0 = 40000;
+    TACCR0 = 20000;
     TACTL = TASSEL_2|MC_2;
 
     ledInitHW();
@@ -161,7 +161,7 @@ static void ledUpdateFrame(void)
 __attribute__((interrupt (TIMER0_A0_VECTOR)))
 void ledTimerISR(void)
 {
-    if (++scrolldiv == 20) {
+    if (++scrolldiv == 40) {
         ledUpdateFrame();
         scrolldiv = 0;
     }

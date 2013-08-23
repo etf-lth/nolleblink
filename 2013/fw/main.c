@@ -21,14 +21,112 @@ void TIMERA0_ISR(void)
     P2OUT ^= BIT6;
 }*/
 
+void bt_command(char *str)
+{
+    switch (str[0]) {
+    case 'V': // Get version
+        switch (str[1]) {
+        case '1':
+            uart_puts("Nolleblinkmojt 2013");
+            break;
+
+        case '2':
+            uart_puts("(c) 2009-2013 ElektroTekniska Föreningen");
+            break;
+
+        case '3':
+        case '4':
+            uart_puts("N/A");
+            break;
+
+        default:
+            goto error;
+        }
+        break;
+
+    case 'q': // Disconnect
+        uart_puts("Not supported :-(");
+        uart_putbrk();
+        break;
+
+    case 'b': // Set bitmap
+        ledSetState(LED_STATE_FRAMEBUFFER);
+        ledSetBuffer(&str[1]);
+        break;
+
+    case 't': // Get permanent text
+        uart_puts("BlinkText");
+        break;
+
+    case 'T': // Set permanent
+        ledSetText(&str[1]);
+        ledSetState(LED_STATE_SCROLL_TEXT);
+        uart_puts("OK");
+        break;
+
+    case 's': // Scroll temporary
+        uart_puts("OK");
+        break;
+
+    case 'i': // Get ID
+        uart_puts("N/A");
+        break;
+
+    case 'I': // Set ID
+    case 'z': // Scroll ID
+        goto error;
+
+    case '\0':
+        break;
+
+    default:
+        goto error;
+    }
+
+    uart_puts("\r\n");
+    return;
+
+error:
+    uart_puts("!WTF\n\r");
+}
+
+void uart_received(char c)
+{
+    static char buf[128], idx = 0;
+
+    if (idx == sizeof(buf)) {
+        idx = 0;
+    }
+
+    buf[idx++] = c;
+
+    if (buf[idx-1] == '\n') {
+        buf[idx-1] = 0;
+        bt_command(buf);
+        idx = 0;
+    }
+}
+
+void uart_break(char c)
+{
+    uart_puts("#nolleblink2012\r\n");
+}
+
 int main(void)
 {
     // Disable watchdog
     WDTCTL = WDTPW | WDTHOLD;
     
-    // Set DCO frequency
-    BCSCTL1 = CALBC1_16MHZ;
-    DCOCTL = CALDCO_16MHZ;
+    // Set DCO frequency and calibration
+    if (CALBC1_16MHZ != 0xff) {
+        DCOCTL = 0x00;
+        BCSCTL1 = CALBC1_16MHZ;
+        DCOCTL = CALDCO_16MHZ;
+    } else {
+        // The calibration sector has been wasted, use a good guess.
+        BCSCTL1 = 0x8f;
+        DCOCTL = 0x91;
+    }
     BCSCTL2 &= ~(BIT5|BIT4);  // Set MCLK prescaler to 1
 
 #if 0
@@ -44,6 +142,7 @@ int main(void)
 
     spiInit();
     ledInit();
+    uart_init();
 
     //ledSetState(LED_STATE_SCROLL_BARS);
 
@@ -55,7 +154,4 @@ int main(void)
     ledSetBuffer("\0\0\x30\x18\x3d\x56\x5c\x1c\x5c\x56\x3d\x18\x30\0");
 
     __bis_SR_register((LPM1_bits)|(GIE));
-    /*for (;;) {
-        P2OUT ^= BIT6;
-    }*/
 }

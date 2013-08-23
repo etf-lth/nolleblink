@@ -20,7 +20,9 @@ char uart_getch(void);
 void uart_putch(char);
 void uart_puthex(unsigned char);
 void uart_puts(const char *c);
+void uart_putbrk(void);
 
 extern void uart_received(char);
+extern void uart_break(char);
 
 #endif
