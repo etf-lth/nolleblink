@@ -2,6 +2,8 @@
 
 #include "spi.h"
 #include "led.h"
+#include "uart.h"
+#include "fifo.h"
 
 /*
  *  P1.0    MCP /CS
@@ -20,6 +22,9 @@ void TIMERA0_ISR(void)
 
     P2OUT ^= BIT6;
 }*/
+
+FIFO_DEF(bt_rx);
+volatile int isr_rx, isr_break;
 
 void bt_command(char *str)
 {
@@ -90,7 +95,7 @@ error:
     uart_puts("!WTF\n\r");
 }
 
-void uart_received(char c)
+void process_rx(char c)
 {
     static char buf[128], idx = 0;
 
@@ -107,9 +112,9 @@ void uart_received(char c)
     }
 }
 
-void uart_break(char c)
+void process_break(void)
 {
-    uart_puts("#nolleblink2012\r\n");
+    uart_puts("#nolleblink2013\r\n");
 }
 
 int main(void)
@@ -153,5 +158,19 @@ int main(void)
 
     ledSetBuffer("\0\0\x30\x18\x3d\x56\x5c\x1c\x5c\x56\x3d\x18\x30\0");
 
-    __bis_SR_register((LPM1_bits)|(GIE));
+    while (1) {
+        __bis_SR_register((LPM1_bits)|(GIE));
+
+        while (isr_rx | isr_break) {
+            if (isr_rx) {
+                isr_rx = 0;
+                while (!FIFO_EMPTY(bt_rx)) {
+                    process_rx(FIFO_GET(bt_rx));
+                }
+            } else if (isr_break) {
+                isr_break = 0;
+                process_break();
+            }
+        }
+    }
 }

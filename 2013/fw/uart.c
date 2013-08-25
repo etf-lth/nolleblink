@@ -13,16 +13,15 @@
 #include "board.h"
 #include "fifo.h"
 
-//FIFO_DEF(bt_rx);
-
-//extern volatile char isr_uart;
-
 #define UART_PxSEL  P1SEL
 #define UART_PxSEL2 P1SEL2
 #define UART_PxDIR  P1DIR
 #define UART_PxOUT  P1OUT
 #define UART_TX_PIN BIT2
 #define UART_RX_PIN BIT1
+
+FIFO_EXTERN(bt_rx);
+extern volatile int isr_rx, isr_break;
 
 void uart_init(void)
 {
@@ -82,26 +81,30 @@ void uart_puthex(unsigned char c)
     uart_putch(hex[c & 0xf]);
 }
 
-void __attribute__ ((weak)) uart_received(char c)
+/*void __attribute__ ((weak)) uart_received(char c)
 {
 }
 
 void __attribute__ ((weak)) uart_break(char c)
 {
-}
+}*/
 
 __attribute__((interrupt (USCIAB0RX_VECTOR)))
 void uart_rxisr(void)
 {
     if (IFG2 & UCA0RXIFG) {
         if (UCA0STAT & UCBRK) {
-            uart_break(UCA0RXBUF);
+            //uart_break(UCA0RXBUF);
+            char dummy = UCA0RXBUF;
+            isr_break = 1;
+            __bic_SR_register_on_exit(LPM1_bits);
         } else {
             char ch = UCA0RXBUF;
-            uart_received(ch);
+            //uart_received(ch);
+            FIFO_PUT(bt_rx, ch);
+            isr_rx = 1;
+            __bic_SR_register_on_exit(LPM1_bits);
         }
-        /*FIFO_PUT(bt_rx, ch);
-        isr_uart = 1;*/
     }
 }
 
