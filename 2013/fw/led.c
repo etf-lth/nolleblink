@@ -39,7 +39,7 @@ void ledInit(void)
 
     // Init LED multiplex timer
     TACCTL0 = CCIE;
-    TACCR0 = 20000;
+    TACCR0 = 10000;
     TACTL = TASSEL_2|MC_2;
 
     ledInitHW();
@@ -161,7 +161,7 @@ static void ledUpdateFrame(void)
 __attribute__((interrupt (TIMER0_A0_VECTOR)))
 void ledTimerISR(void)
 {
-    if (++scrolldiv == 40) {
+    if (++scrolldiv == 80) {
         ledUpdateFrame();
         scrolldiv = 0;
     }
@@ -172,39 +172,47 @@ void ledTimerISR(void)
 
 static void ledUpdateRow(void)
 {
-    unsigned int col, leds, mask;
+    static int div;
 
-    if (state == LED_STATE_OFF) {
+    if (++div == 2) {
+        P2OUT = 0;
+        div = 0;
+    } else {
+        unsigned int col, leds, mask;
+
+        if (state == LED_STATE_OFF) {
+            // disable row
+            //P4OUT &= ~(BIT3|BIT4);
+            P2OUT = 0;
+            return;
+        }
+
+
+        // assemble column pixels
+        leds = 0;
+        mask = 1 << row;
+        for (col=0; col<15; col++) {
+            if (ledarray[col] & mask) {
+                leds |= 0x4000 >> col;
+            }
+        }
+
         // disable row
         //P4OUT &= ~(BIT3|BIT4);
         P2OUT = 0;
-        return;
-    }
 
-    // assemble column pixels
-    leds = 0;
-    mask = 1 << row;
-    for (col=0; col<15; col++) {
-        if (ledarray[col] & mask) {
-	        leds |= 0x4000 >> col;
+        // update column drivers
+        ledSetRow(leds);
+      
+        // enable row
+        //P2OUT = 1 << row;
+        P2OUT = 0x40 >> row;
+
+        // update row counter
+        row++;
+        if (row > 6) {
+            row = 0;
         }
-    }
-
-    // disable row
-    //P4OUT &= ~(BIT3|BIT4);
-    P2OUT = 0;
-
-    // update column drivers
-    ledSetRow(leds);
-  
-    // enable row
-    //P2OUT = 1 << row;
-    P2OUT = 0x40 >> row;
-
-    // update row counter
-    row++;
-    if (row > 6) {
-        row = 0;
     }
 }
 
