@@ -10,8 +10,7 @@
 #ifndef SPI_H
 #define SPI_H
 
-void spiInit(void);
-unsigned char spiTransfer(unsigned char);
-unsigned char spiTransferFast(unsigned char);
+void spi_init(void);
+unsigned char spi_xfer(unsigned char);
 
 #endif

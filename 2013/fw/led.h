@@ -16,13 +16,13 @@ enum {
     LED_STATE_SCROLL_TEMP,
     LED_STATE_SCROLL_BARS,
     LED_STATE_FRAMEBUFFER,
-    LED_STATE_VIRUS
+    //LED_STATE_VIRUS
 };
 
-void ledInit();
-void ledSetState(unsigned int);
-void ledSetText(const char *);
-void ledSetTempText(char, const char *);
-void ledSetBuffer(const char *);
+void led_init();
+void led_set_state(unsigned int);
+void led_set_text(const char *);
+void led_set_temp_text(char, const char *);
+void led_set_buffer(const char *);
 
 #endif
